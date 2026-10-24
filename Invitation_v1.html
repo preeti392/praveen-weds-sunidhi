@@ -168,13 +168,18 @@
 
 <body class="bg-gradient-to-b from-slate-50 via-lake-50/40 to-slate-100 text-slate-800 font-sans antialiased relative overflow-x-hidden selection:bg-lake-300 selection:text-lake-950">
 
+  <!-- Audio Player Element -->
+  <audio id="weddingBgAudio" loop preload="auto">
+    <source src="Vaaroon Forever Mirzapur 320 Kbps.mp3" type="audio/mpeg" />
+  </audio>
+
   <!-- Interactive Ripple & Petal Canvas (Always Background) -->
   <canvas id="waterscapeCanvas" class="fixed inset-0 pointer-events-none z-10 w-full h-full"></canvas>
 
   <!-- Floating Audio & RSVP Navigation -->
   <div class="fixed bottom-6 right-6 z-50 flex items-center gap-3">
     <!-- Music Player Toggle -->
-    <button id="audioToggleBtn" onclick="toggleAudio()" class="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-lake-900/95 text-lake-100 backdrop-blur-md border border-lake-500/40 shadow-xl hover:bg-lake-800 transition-all duration-300 hover:scale-105" title="Play/Pause Santoor Waterscape Music">
+    <button id="audioToggleBtn" onclick="toggleAudio()" class="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-lake-900/95 text-lake-100 backdrop-blur-md border border-lake-500/40 shadow-xl hover:bg-lake-800 transition-all duration-300 hover:scale-105" title="Play/Pause Wedding Music">
       <div id="eqBars" class="flex items-end gap-1 h-4">
         <span class="bar-1 w-1 bg-lotus rounded-full h-1 transition-all"></span>
         <span class="bar-2 w-1 bg-lake-300 rounded-full h-2 transition-all"></span>
@@ -290,7 +295,6 @@
 
   <!-- ========================================================================= -->
   <!-- 3. MEET THE COUPLE (INDIVIDUAL INTROS)                                    -->
-  <!-- Strict Image Usage: Groom -> Groom_2.jpeg, Bride -> Bride_2.jpeg          -->
   <!-- ========================================================================= -->
   <section id="coupleIntro" class="py-12 px-4 max-w-6xl mx-auto relative z-20">
     <div class="text-center mb-12">
@@ -415,7 +419,6 @@
 
   <!-- ========================================================================= -->
   <!-- 4. BOTH INTRO WITH AUSPICIOUS WEDDING DATE REVEAL                         -->
-  <!-- Strict Image Usage: Both.jpg (fallback: Weds.jpg)                         -->
   <!-- ========================================================================= -->
   <section class="py-14 px-4 max-w-5xl mx-auto relative z-20">
     <div class="glass-card-dark rounded-3xl p-8 md:p-12 text-white shadow-2xl border border-lake-500/30 overflow-hidden relative">
@@ -488,8 +491,7 @@
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 5. JOURNEY INTRO: RIVER OF MOMENTS (4 MILESTONES)                        -->
-  <!-- Strict Image Usage: Date1.jpg, Date2.jpg, Date3.jpg, Date4.jpg           -->
+  <!-- 5. JOURNEY INTRO: RIVER OF MOMENTS (4 MILESTONES)                         -->
   <!-- ========================================================================= -->
   <section class="py-14 px-4 max-w-5xl mx-auto relative z-20">
     <div class="text-center mb-14">
@@ -600,10 +602,6 @@
 
   <!-- ========================================================================= -->
   <!-- 6. CEREMONIES & FUNCTIONS ITINERARY                                      -->
-  <!-- Strict Image Usage:                                                       -->
-  <!--   - Mehendi: Mehndi.jpg (fallback Mehndi.png)                             -->
-  <!--   - Haldi: Haldi.jpg (fallback Haldi.png)                                 -->
-  <!--   - Barat/Vivah: Married_2.png (fallback Married.png)                     -->
   <!-- ========================================================================= -->
   <section id="functionsSection" class="py-14 px-4 max-w-6xl mx-auto relative z-20">
     <div class="text-center mb-12">
@@ -831,7 +829,7 @@
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 7. CREATIVE INTERACTIVE TOOLS FOR GUESTS                                  -->
+  <!-- 7. CREATIVE INTERACTIVE TOOLS FOR GUESTS                                 -->
   <!-- ========================================================================= -->
   <section class="py-14 px-4 max-w-6xl mx-auto relative z-20">
     <div class="text-center mb-12">
@@ -1216,9 +1214,11 @@
     /* -------------------------------------------------------------------------
        1. Gate Opening & Audio Trigger
        ------------------------------------------------------------------------- */
-    let audioContext = null;
     let isPlayingAudio = false;
-    let audioInterval = null;
+
+    function getAudioElement() {
+      return document.getElementById('weddingBgAudio');
+    }
 
     function openGateAndEnter() {
       const gateOverlay = document.getElementById('entranceGateOverlay');
@@ -1234,81 +1234,26 @@
       }, 1400);
     }
 
-    /* -------------------------------------------------------------------------
-       2. Web Audio Synthesizer (Santoor & Lake Chimes)
-       ------------------------------------------------------------------------- */
-    function initAudioContext() {
-      if (!audioContext) {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        audioContext = new AudioCtx();
-      }
-      if (audioContext.state === 'suspended') {
-        audioContext.resume();
-      }
-    }
-
-    // Traditional pentatonic notes (Raag Bhupali scale)
-    const santoorFrequencies = [
-      261.63, // C4
-      293.66, // D4
-      329.63, // E4
-      392.00, // G4
-      440.00, // A4
-      523.25, // C5
-      587.33, // D5
-      659.25  // E5
-    ];
-
-    function playSantoorChime(freq, timeOffset = 0, duration = 2.4) {
-      if (!audioContext) return;
-      const startTime = audioContext.currentTime + timeOffset;
-
-      const osc = audioContext.createOscillator();
-      const gain = audioContext.createGain();
-
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, startTime);
-
-      gain.gain.setValueAtTime(0.001, startTime);
-      gain.gain.linearRampToValueAtTime(0.12, startTime + 0.04);
-      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-
-      osc.connect(gain);
-      gain.connect(audioContext.destination);
-
-      osc.start(startTime);
-      osc.stop(startTime + duration);
-    }
-
-    function scheduleSantoorMelody() {
-      if (!isPlayingAudio) return;
-      
-      const noteCount = 3 + Math.floor(Math.random() * 3);
-      for (let i = 0; i < noteCount; i++) {
-        const randomNote = santoorFrequencies[Math.floor(Math.random() * santoorFrequencies.length)];
-        playSantoorChime(randomNote, i * 0.28, 2.2);
-      }
-    }
-
     function startAudioEngine() {
-      try {
-        initAudioContext();
+      const audio = getAudioElement();
+      if (!audio) return;
+
+      audio.play().then(() => {
         isPlayingAudio = true;
         document.getElementById('audioStatusText').innerText = 'Music: On';
         document.getElementById('eqBars').classList.add('eq-playing');
-
-        scheduleSantoorMelody();
-        if (audioInterval) clearInterval(audioInterval);
-        audioInterval = setInterval(scheduleSantoorMelody, 3200);
-      } catch (err) {
+      }).catch(err => {
         console.warn('Audio autoplay prevented by browser policy:', err);
-      }
+      });
     }
 
     function toggleAudio() {
+      const audio = getAudioElement();
+      if (!audio) return;
+
       if (isPlayingAudio) {
+        audio.pause();
         isPlayingAudio = false;
-        if (audioInterval) clearInterval(audioInterval);
         document.getElementById('audioStatusText').innerText = 'Music: Off';
         document.getElementById('eqBars').classList.remove('eq-playing');
       } else {
@@ -1317,7 +1262,7 @@
     }
 
     /* -------------------------------------------------------------------------
-       3. Interactive Waterscape Canvas: Ripples & Petals
+       2. Interactive Waterscape Canvas: Ripples & Petals
        ------------------------------------------------------------------------- */
     const canvas = document.getElementById('waterscapeCanvas');
     const ctx = canvas.getContext('2d');
@@ -1415,7 +1360,7 @@
     requestAnimationFrame(animateWaterscape);
 
     /* -------------------------------------------------------------------------
-       4. Countdown Timer to 04 Dec 2026 19:00 IST
+       3. Countdown Timer to 04 Dec 2026 19:00 IST
        ------------------------------------------------------------------------- */
     const weddingDate = new Date('December 4, 2026 19:00:00 GMT+0530').getTime();
 
@@ -1445,7 +1390,7 @@
     updateCountdown();
 
     /* -------------------------------------------------------------------------
-       5. Calendar (.ICS) Generator
+       4. Calendar (.ICS) Generator
        ------------------------------------------------------------------------- */
     function downloadICS() {
       const icsContent = 
@@ -1482,7 +1427,7 @@ END:VCALENDAR`;
     }
 
     /* -------------------------------------------------------------------------
-       6. Wardrobe Stylist Swatch Tool
+       5. Wardrobe Stylist Swatch Tool
        ------------------------------------------------------------------------- */
     function previewPalette(name, hex, note) {
       document.getElementById('paletteName').innerText = name;
@@ -1492,7 +1437,7 @@ END:VCALENDAR`;
     }
 
     /* -------------------------------------------------------------------------
-       7. The Couple's Verdict Quiz Tool
+       6. The Couple's Verdict Quiz Tool
        ------------------------------------------------------------------------- */
     const triviaQuestions = [
       {
@@ -1524,6 +1469,7 @@ END:VCALENDAR`;
         feedback.className = "mt-4 p-3.5 rounded-xl text-xs font-medium leading-relaxed bg-teal-100 text-teal-900 border border-teal-300";
         feedback.innerHTML = `<strong>✨ You got it!</strong> ${item.explanation}`;
       } else {
+        quizScoreVal += 0;
         feedback.className = "mt-4 p-3.5 rounded-xl text-xs font-medium leading-relaxed bg-apricot-100 text-apricot-900 border border-apricot-300";
         feedback.innerHTML = `<strong>😄 Close, but nope!</strong> ${item.explanation}`;
       }
@@ -1550,7 +1496,7 @@ END:VCALENDAR`;
     }
 
     /* -------------------------------------------------------------------------
-       8. Floating Lantern Release
+       7. Floating Lantern Release
        ------------------------------------------------------------------------- */
     function releaseLantern() {
       const nameInput = document.getElementById('guestBlessingName');
@@ -1583,11 +1529,6 @@ END:VCALENDAR`;
       newCard.innerHTML = `<span class="font-bold" style="color:${color}">${name}:</span><p class="mt-1 italic leading-relaxed">"${text}"</p>`;
       wall.prepend(newCard);
 
-      if (audioContext) {
-        playSantoorChime(523.25, 0, 1.8);
-        playSantoorChime(659.25, 0.2, 2.2);
-      }
-
       nameInput.value = '';
       textInput.value = '';
     }
@@ -1597,7 +1538,7 @@ END:VCALENDAR`;
     }
 
     /* -------------------------------------------------------------------------
-       9. Interactive RSVP & Wedding Pass
+       8. Interactive RSVP & Wedding Pass
        ------------------------------------------------------------------------- */
     function handleRSVPSubmit(e) {
       e.preventDefault();
@@ -1613,11 +1554,6 @@ END:VCALENDAR`;
       const confirmationBox = document.getElementById('rsvpConfirmationPass');
       confirmationBox.classList.remove('hidden');
       confirmationBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-      if (audioContext) {
-        playSantoorChime(392.00, 0, 1.4);
-        playSantoorChime(523.25, 0.2, 1.8);
-      }
     }
   </script>
 </body>
